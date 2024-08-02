@@ -101,6 +101,70 @@ void evaluate_speed(const function<const vector<wstring>(const wstring&, const u
     cout << fixed << setprecision(2) << text.length() * pressure / 10000. / (clock() - start_time) * CLOCKS_PER_SEC << " 万字/秒" << endl;
 }
 
+class Node
+{
+public:
+    unordered_map<wchar_t, Node*> children;
+    string value;
+
+    Node() : value("")
+    {}
+
+    Node(const string& value) : value(value)
+    {}
+
+    Node* const add_child(const wchar_t c, const string& value, const bool overwrite=false)
+    {
+        if (children.find(c) == children.cend())
+        {
+            Node* const child = new Node(value);
+            children[c] = child;
+            return child;
+        }
+        if (overwrite)
+        {
+            Node* const child = children[c];
+            child->value = value;
+            return child;
+        }
+        return children[c];
+    }
+};
+
+class Trie: public Node
+{
+public:
+    const bool contains(const wstring& key)
+    {
+        Node* state = this;
+        for (const wchar_t c : key)
+        {
+            unordered_map<wchar_t, Node*>& children = state->children;
+            if (children.find(c) == children.cend())
+                return false;
+            state = state->children[c];
+        }
+        return state->value.length() > 0;
+    }
+
+    string& getitem(const wstring& key)
+    {
+        Node* state = this;
+        for (const wchar_t c : key)
+            state = state->children[c];
+        return state->value;
+    }
+
+    const void setitem(const wstring& key, const string& value)
+    {
+        Node* state = this;
+        const int length = key.length();
+        for (int i = 0; i < length - 1; ++i)
+            state = state->add_child(key[i], "", false);
+        state->add_child(key.back(), value, true);
+    }
+};
+
 PYBIND11_MODULE(segmentation, m)
 {
     m.doc() = "分词";
@@ -109,4 +173,9 @@ PYBIND11_MODULE(segmentation, m)
     m.def("backward_segment", &backward_segment, "逆向最长匹配");
     m.def("bidirectional_segment", &bidirectional_segment, "双向最长匹配");
     m.def("evaluate_speed", &evaluate_speed, "速度评测");
+    py::class_<Trie>(m, "Trie")
+            .def(py::init<>())
+            .def("__contains__", &Trie::contains)
+            .def("__getitem__", &Trie::getitem)
+            .def("__setitem__", &Trie::setitem);
 }
