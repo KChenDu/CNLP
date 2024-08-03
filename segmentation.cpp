@@ -101,69 +101,93 @@ void evaluate_speed(const function<const vector<wstring>(const wstring&, const u
     cout << fixed << setprecision(2) << text.length() * pressure / 10000. / (clock() - start_time) * CLOCKS_PER_SEC << " 万字/秒" << endl;
 }
 
+template <class Type>
 class Node
 {
 public:
-    unordered_map<wchar_t, Node*> children;
-    string value;
+    unordered_map<wchar_t, Node<Type>*> children;
+    Type value;
 
-    Node() : value("")
-    {}
-
-    Node(const string& value) : value(value)
-    {}
-
-    Node* const add_child(const wchar_t c, const string& value, const bool overwrite=false)
-    {
-        if (children.find(c) == children.cend())
-        {
-            Node* const child = new Node(value);
-            children[c] = child;
-            return child;
-        }
-        if (overwrite)
-        {
-            Node* const child = children[c];
-            child->value = value;
-            return child;
-        }
-        return children[c];
-    }
+    Node();
+    Node(const Type& value);
+    Node<Type>* const add_child(const wchar_t c, const Type& value, const bool overwrite=false);
 };
 
-class Trie: public Node
+template <class Type>
+Node<Type>::Node() : value(Type{})
+{}
+
+template <class Type>
+Node<Type>::Node(const Type& value) : value(value)
+{}
+
+template <class Type>
+Node<Type>* const Node<Type>::add_child(const wchar_t c, const Type& value, const bool overwrite)
+{
+    if (children.find(c) == children.cend())
+    {
+        Node<Type>* const child = new Node(value);
+        children[c] = child;
+        return child;
+    }
+    if (overwrite)
+    {
+        Node<Type>* const child = children[c];
+        child->value = value;
+        return child;
+    }
+    return children[c];
+}
+
+template <class Type>
+class Trie: public Node<Type>
 {
 public:
-    const bool contains(const wstring& key)
-    {
-        Node* state = this;
-        for (const wchar_t c : key)
-        {
-            unordered_map<wchar_t, Node*>& children = state->children;
-            if (children.find(c) == children.cend())
-                return false;
-            state = state->children[c];
-        }
-        return state->value.length() > 0;
-    }
-
-    string& getitem(const wstring& key)
-    {
-        Node* state = this;
-        for (const wchar_t c : key)
-            state = state->children[c];
-        return state->value;
-    }
-
-    const void setitem(const wstring& key, const string& value)
-    {
-        Node* state = this;
-        const int length = key.length();
-        for (int i = 0; i < length - 1; ++i)
-            state = state->add_child(key[i], "", false);
-        state->add_child(key.back(), value, true);
-    }
+    const bool contains(const wstring& key);
+    Type& getitem(const wstring& key);
+    const void setitem(const wstring& key, const Type& value);
 };
+
+template <class Type>
+const bool Trie<Type>::contains(const wstring& key)
+{
+    Node<Type>* state = this;
+    for (const wchar_t c : key)
+    {
+        unordered_map<wchar_t, Node<Type>*>& children = state->children;
+        if (children.find(c) == children.cend())
+            return false;
+        state = state->children[c];
+    }
+    return state->value != Type{};
+}
+
+template <class Type>
+Type& Trie<Type>::getitem(const wstring& key)
+{
+    Node<Type>* state = this;
+    for (const wchar_t c : key)
+        state = state->children[c];
+    return state->value;
+}
+
+template <class Type>
+const void Trie<Type>::setitem(const wstring& key, const Type& value)
+{
+    Node<Type>* state = this;
+    const int length = key.length();
+    for (int i = 0; i < length - 1; ++i)
+        state = state->add_child(key[i], Type{}, false);
+    state->add_child(key.back(), value, true);
+}
+
+void evaluate_trie_speed(const function<const vector<wstring>(const wstring&, const unordered_set<wstring>&)>& segment, const wstring& text, const Trie<string>& trie, const int pressure=10000)
+{
+    const clock_t start_time = clock();
+    for (int i = 0; i < pressure; ++i)
+        trie.contains()
+    cout << fixed << setprecision(2) << text.length() * pressure / 10000. / (clock() - start_time) * CLOCKS_PER_SEC << " 万字/秒" << endl;
+}
 
 PYBIND11_MODULE(segmentation, m)
 {
@@ -173,9 +197,9 @@ PYBIND11_MODULE(segmentation, m)
     m.def("backward_segment", &backward_segment, "逆向最长匹配");
     m.def("bidirectional_segment", &bidirectional_segment, "双向最长匹配");
     m.def("evaluate_speed", &evaluate_speed, "速度评测");
-    py::class_<Trie>(m, "Trie")
+    py::class_<Trie<string>>(m, "Trie")
             .def(py::init<>())
-            .def("__contains__", &Trie::contains)
-            .def("__getitem__", &Trie::getitem)
-            .def("__setitem__", &Trie::setitem);
+            .def("__contains__", &Trie<string>::contains)
+            .def("__getitem__", &Trie<string>::getitem)
+            .def("__setitem__", &Trie<string>::setitem);
 }
