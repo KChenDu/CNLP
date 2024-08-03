@@ -29,11 +29,11 @@ if __name__ == '__main__':
     from segmentation import forward_segment, backward_segment, bidirectional_segment, Trie
     from pysegmentation import evaluate_speed
 
-
-    trie = Trie()
+    m = {}
     for word in dic:
-        trie[word] = '\0'
+        m[word] = '\0'
 
+    trie = Trie(m)
     evaluate_speed(forward_segment, text, trie, pressure)
     evaluate_speed(backward_segment, text, trie, pressure)
     evaluate_speed(bidirectional_segment, text, trie, pressure)
