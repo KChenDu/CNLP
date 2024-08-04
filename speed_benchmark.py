@@ -1,5 +1,4 @@
 from IOUtil import load_dictionary
-from pysegmentation import forward_segment, backward_segment, bidirectional_segment, evaluate_speed
 
 
 if __name__ == '__main__':
@@ -8,25 +7,27 @@ if __name__ == '__main__':
     dic: set = load_dictionary()
 
 
-    from pysegmentation import forward_segment, backward_segment, bidirectional_segment, evaluate_speed
+    from pysegmentation import fully_segment, forward_segment, backward_segment, bidirectional_segment, evaluate_speed
 
 
+    evaluate_speed(fully_segment, text, dic, pressure)
     evaluate_speed(forward_segment, text, dic, pressure)
     evaluate_speed(backward_segment, text, dic, pressure)
     evaluate_speed(bidirectional_segment, text, dic, pressure)
     print('\n')
 
 
-    from segmentation import forward_segment, backward_segment, bidirectional_segment, evaluate_speed
+    from segmentation import fully_segment, forward_segment, backward_segment, bidirectional_segment, evaluate_speed
 
 
+    evaluate_speed(fully_segment, text, dic, pressure)
     evaluate_speed(forward_segment, text, dic, pressure)
     evaluate_speed(backward_segment, text, dic, pressure)
     evaluate_speed(bidirectional_segment, text, dic, pressure)
     print('\n')
 
 
-    from segmentation import forward_segment, backward_segment, bidirectional_segment, Trie
+    from segmentation import fully_segment, forward_segment, backward_segment, bidirectional_segment, Trie
     from pysegmentation import evaluate_speed
 
     m = {}
@@ -34,6 +35,7 @@ if __name__ == '__main__':
         m[word] = '\0'
 
     trie = Trie(m)
+    evaluate_speed(fully_segment, text, trie, pressure)
     evaluate_speed(forward_segment, text, trie, pressure)
     evaluate_speed(backward_segment, text, trie, pressure)
     evaluate_speed(bidirectional_segment, text, trie, pressure)

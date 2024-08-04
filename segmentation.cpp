@@ -115,7 +115,7 @@ public:
 };
 
 template <class Type>
-Node<Type>::Node() : value(Type{})
+Node<Type>::Node() : value(Type())
 {}
 
 template <class Type>
@@ -149,6 +149,8 @@ public:
     Trie(const unordered_map<wstring, Type>& dic);
     const bool contains(const wstring& key);
     Type& operator[](const wstring& key);
+    const vector<wstring> parse_text(const wstring& text);
+    const vector<wstring> parse_longest_text(const wstring& text);
 };
 
 template <class Type>
@@ -161,7 +163,7 @@ const void Trie<Type>::setitem(const wstring& key, const Type& value)
     Node<Type>* state = this;
     const int length = key.length();
     for (int i = 0; i < length - 1; ++i)
-        state = state->add_child(key[i], Type{}, false);
+        state = state->add_child(key[i], Type(), false);
     state->add_child(key.back(), value, true);
 }
 
@@ -169,7 +171,7 @@ template <class Type>
 Trie<Type>::Trie(const unordered_map<wstring, Type>& dic)
 {
     for (const auto& [word, value] : dic)
-        this->setitem(word, value);
+        setitem(word, value);
 }
 
 template <class Type>
@@ -181,9 +183,9 @@ const bool Trie<Type>::contains(const wstring& key)
         unordered_map<wchar_t, Node<Type>*>& children = state->children;
         if (children.find(c) == children.cend())
             return false;
-        state = state->children[c];
+        state = children[c];
     }
-    return state->value != Type{};
+    return state->value != Type();
 }
 
 template <class Type>
@@ -195,41 +197,60 @@ Type& Trie<Type>::operator[](const wstring& key)
     return state->value;
 }
 
-const vector<wstring> fully_segment(const wstring& text, Trie<string>& dic)
+template <class Type>
+const vector<wstring> Trie<Type>::parse_text(const wstring& text)
 {
     vector<wstring> word_list;
     const int length = text.length();
     for (int i = 0; i < length; ++i)
-        for (int n = 1; i + n <= length; ++n)
+    {
+        Node<Type>* state = this;
+        for (int j = i; j < length; ++j)
         {
-            const wstring word = text.substr(i, n);
-            if (dic.contains(word))
-                word_list.push_back(word);
+            unordered_map<wchar_t, Node<Type>*>& children = state->children;
+            if (children.find(text[j]) == children.cend())
+                break;
+            state = children[text[j]];
+            if (state->value != Type())
+                word_list.push_back(text.substr(i, j - i + 1));
         }
+    }
     return word_list;
 }
 
-const vector<wstring> forward_segment(const wstring& text, Trie<string>& dic)
+template <class Type>
+const vector<wstring> Trie<Type>::parse_longest_text(const wstring& text)
 {
     vector<wstring> word_list;
     const int length = text.length();
     int i = 0;
     while (i < length)
     {
-        wstring longest_word = text.substr(i, 1);
-        for (int n = length - i; n > 1; --n)
+        Node<Type>* state = this;
+        int n = 1;
+        for (int j = i; j < length; ++j)
         {
-            const wstring word = text.substr(i, n);
-            if (dic.contains(word))
-            {
-                longest_word = word;
+            unordered_map<wchar_t, Node<Type>*>& children = state->children;
+            if (children.find(text[j]) == children.cend())
                 break;
-            }
+            state = children[text[j]];
+            if (state->value != Type())
+                n = j - i + 1;
         }
-        word_list.push_back(longest_word);
-        i += longest_word.length();
+        word_list.push_back(text.substr(i, n));
+        i += n;
     }
     return word_list;
+}
+
+const vector<wstring> fully_segment(const wstring& text, Trie<string>& dic)
+{
+    return dic.parse_text(text);
+}
+
+const vector<wstring> forward_segment(const wstring& text, Trie<string>& dic)
+{
+    return dic.parse_longest_text(text);
 }
 
 const vector<wstring> backward_segment(const wstring& text, Trie<string>& dic)
@@ -281,7 +302,9 @@ PYBIND11_MODULE(segmentation, m)
             .def(py::init<const unordered_map<wstring, string>&>())
             .def("__contains__", &Trie<string>::contains)
             .def("__getitem__", &Trie<string>::operator[])
-            .def("__setitem__", &Trie<string>::setitem);
+            .def("__setitem__", &Trie<string>::setitem)
+            .def("parse_text", &Trie<string>::parse_text)
+            .def("parse_longest_text", &Trie<string>::parse_longest_text);
     m.def("fully_segment", py::overload_cast<const wstring&, Trie<string>&>(&fully_segment), "完全切分");
     m.def("forward_segment", py::overload_cast<const wstring&, Trie<string>&>(&forward_segment), "正向最长匹配");
     m.def("backward_segment", py::overload_cast<const wstring&, Trie<string>&>(&backward_segment), "逆向最长匹配");
