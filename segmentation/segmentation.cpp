@@ -1,16 +1,11 @@
-#include <string>
-#include <unordered_set>
-#include <algorithm>
-#include <ctime>
+#include "segmentation.h"
 #include <iostream>
 #include <iomanip>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
-#include <pybind11/operators.h>
 
 namespace py = pybind11;
-using namespace std;
 
 const vector<wstring> fully_segment(const wstring& text, const unordered_set<wstring>& dic)
 {
@@ -94,25 +89,13 @@ const vector<wstring> bidirectional_segment(const wstring& text, const unordered
     return b;
 }
 
-void evaluate_speed(const function<const vector<wstring>(const wstring&, const unordered_set<wstring>&)>& segment, const wstring& text, const unordered_set<wstring>& dic, const int pressure=10000)
+void evaluate_speed(const function<const vector<wstring>(const wstring&, const unordered_set<wstring>&)>& segment, const wstring& text, const unordered_set<wstring>& dic, const int pressure)
 {
     const clock_t start_time = clock();
     for (int i = 0; i < pressure; ++i)
         segment(text, dic);
     cout << fixed << setprecision(2) << text.length() * pressure / 10000. / (clock() - start_time) * CLOCKS_PER_SEC << " 万字/秒" << endl;
 }
-
-template <class Type>
-class Node
-{
-public:
-    unordered_map<wchar_t, Node<Type>*> children;
-    Type value;
-
-    Node();
-    Node(const Type& value);
-    Node<Type>* const add_child(const wchar_t c, const Type& value, const bool overwrite=false);
-};
 
 template <class Type>
 Node<Type>::Node() : value(Type())
@@ -139,19 +122,6 @@ Node<Type>* const Node<Type>::add_child(const wchar_t c, const Type& value, cons
     }
     return children[c];
 }
-
-template <class Type>
-class Trie: public Node<Type>
-{
-public:
-    Trie();
-    const void setitem(const wstring& key, const Type& value);
-    Trie(const unordered_map<wstring, Type>& dic);
-    const bool contains(const wstring& key);
-    Type& operator[](const wstring& key);
-    const vector<wstring> parse_text(const wstring& text);
-    const vector<wstring> parse_longest_text(const wstring& text);
-};
 
 template <class Type>
 Trie<Type>::Trie()
