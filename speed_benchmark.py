@@ -30,6 +30,7 @@ if __name__ == '__main__':
     from segmentation import fully_segment, forward_segment, backward_segment, bidirectional_segment, Trie
     from pysegmentation import evaluate_speed
 
+
     m = {}
     for word in dic:
         m[word] = '\0'
