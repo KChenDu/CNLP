@@ -26,7 +26,7 @@ class Trie: public Node<Type>
 {
 public:
     Trie();
-    const void setitem(const wstring& key, const Type& value);
+    void setitem(const wstring& key, const Type& value);
     Trie(const unordered_map<wstring, Type>& dic);
     const bool contains(const wstring& key);
     Type& operator[](const wstring& key);
@@ -34,6 +34,6 @@ public:
     const vector<wstring> parse_longest_text(const wstring& text);
 };
 
-const void init_trie(py::module_ &m);
+void init_trie(const py::module_& m);
 
 #endif //CNLP_TRIE_H

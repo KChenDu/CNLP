@@ -32,7 +32,7 @@ Trie<Type>::Trie()
 {}
 
 template <class Type>
-const void Trie<Type>::setitem(const wstring& key, const Type& value)
+void Trie<Type>::setitem(const wstring& key, const Type& value)
 {
     Node<Type>* state = this;
     const int length = key.length();
@@ -117,7 +117,7 @@ const vector<wstring> Trie<Type>::parse_longest_text(const wstring& text)
     return word_list;
 }
 
-const void init_trie(py::module_ &m)
+void init_trie(const py::module_& m)
 {
     py::class_<Trie<string>>(m, "Trie")
             .def(py::init<>())

@@ -90,7 +90,9 @@ const vector<wstring> bidirectional_segment(const wstring& text, const unordered
     return b;
 }
 
-const void evaluate_speed(const function<const vector<wstring>(const wstring&, const unordered_set<wstring>&)>& segment, const wstring& text, const unordered_set<wstring>& dic, const int pressure)
+const int pressure = 10000;
+
+void evaluate_speed(const function<const vector<wstring>(const wstring&, const unordered_set<wstring>&)>& segment, const wstring& text, const unordered_set<wstring>& dic)
 {
     const clock_t start_time = clock();
     for (int i = 0; i < pressure; ++i)
@@ -151,6 +153,7 @@ PYBIND11_MODULE(segmentation, m)
     m.def("forward_segment", py::overload_cast<const wstring&, const unordered_set<wstring>&>(&forward_segment), "正向最长匹配");
     m.def("backward_segment", py::overload_cast<const wstring&, const unordered_set<wstring>&>(&backward_segment), "逆向最长匹配");
     m.def("bidirectional_segment", py::overload_cast<const wstring&, const unordered_set<wstring>&>(&bidirectional_segment), "双向最长匹配");
+    m.attr("pressure") = pressure;
     m.def("evaluate_speed", &evaluate_speed, "速度评测");
     init_trie(m);
     m.def("fully_segment", py::overload_cast<const wstring&, Trie<string>&>(&fully_segment), "完全切分");
