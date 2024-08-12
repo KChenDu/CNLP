@@ -3,7 +3,7 @@ from segmentation import Trie
 
 
 if __name__ == '__main__':
-    trie = Trie()
+    trie: Trie = Trie()
     trie['自然'] = 'nature'
     trie['自然人'] = 'human'
     trie['自然语言'] = 'language'
@@ -11,7 +11,7 @@ if __name__ == '__main__':
     trie['入门'] = 'introduction'
     assert '自然' in trie
 
-    trie['自然'] = ''
+    trie.remove_item('自然')
     assert '自然' not in trie
 
     trie['自然语言'] = 'human language'
@@ -19,13 +19,13 @@ if __name__ == '__main__':
 
     assert trie['入门'] == 'introduction'
 
-    dic = load_dictionary()
+    dic: set = load_dictionary()
 
-    m = {}
+    m: dict = {}
     for word in dic:
-        m[word] = '\0'
+        m[word] = ''
 
-    trie = Trie(m)
+    trie: Trie = Trie(m)
 
     print(trie.parse_text('商品和服务'))
     print(trie.parse_text('就读北京大学'))

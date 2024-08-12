@@ -15,10 +15,10 @@ class Node
 public:
     unordered_map<wchar_t, Node<Type>*> children;
     Type value;
+    bool word_end;
 
     Node();
     Node(const Type& value);
-    Node<Type>* const add_child(const wchar_t c, const Type& value, const bool overwrite=false);
 };
 
 template <class Type>
@@ -27,6 +27,7 @@ class Trie: public Node<Type>
 public:
     Trie();
     void setitem(const wstring& key, const Type& value);
+    void remove_item(const wstring& key);
     Trie(const unordered_map<wstring, Type>& dic);
     const bool contains(const wstring& key);
     Type& operator[](const wstring& key);

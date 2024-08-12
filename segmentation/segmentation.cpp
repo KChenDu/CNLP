@@ -1,4 +1,4 @@
-#include "trie.h"
+#include "trie/trie.h"
 #include "segmentation.h"
 #include <iostream>
 #include <iomanip>

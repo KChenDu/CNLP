@@ -21,11 +21,11 @@ if __name__ == '__main__':
         print(f'{len(text) * pressure / 10000. / (time() - start_time):.2f} 万字/秒')
 
 
-    m = {}
+    m: dict = {}
     for word in dic:
-        m[word] = '\0'
+        m[word] = ''
 
-    trie = Trie(m)
+    trie: Trie = Trie(m)
     evaluate_speed(fully_segment, text, trie)
     evaluate_speed(forward_segment, text, trie)
     evaluate_speed(backward_segment, text, trie)
